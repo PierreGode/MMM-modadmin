@@ -28,4 +28,6 @@ From the portal you can:
 - View and edit configuration for each module
 - Add new configuration options by editing the JSON for a module
 
-Changes are written back to `config/config.js`.
+Changes are written back to `config/config.js`. Before each save a timestamped
+backup of the previous `config.js` is stored in the `config` directory. Only the
+three most recent backups are kept.
