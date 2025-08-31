@@ -1,0 +1,13 @@
+{
+  "name": "mmm-modadmin",
+  "version": "0.1.0",
+  "description": "MagicMirror² module for web-based module administration.",
+  "main": "MMM-modadmin.js",
+  "scripts": {},
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "body-parser": "^1.20.2"
+  }
+}
