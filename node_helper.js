@@ -45,6 +45,7 @@ module.exports = NodeHelper.create({
     app.put("/api/config", (req, res) => {
       this.configData = req.body;
       const content = "module.exports = " + JSON.stringify(this.configData, null, 2) + ";\n";
+      this.backupConfig();
       fs.writeFile(this.configPath, content, err => {
         if (err) return res.status(500).json({ error: err.message });
         res.json({ success: true });
@@ -54,6 +55,29 @@ module.exports = NodeHelper.create({
     app.listen(port, "0.0.0.0", () => {
       Log.log(`MMM-ModAdmin server listening on port ${port}`);
     });
+  },
+
+  backupConfig() {
+    try {
+      if (fs.existsSync(this.configPath)) {
+        const dir = path.dirname(this.configPath);
+        const ts = new Date().toISOString().replace(/[:.]/g, "-");
+        const backup = path.join(dir, `config.js.bak-${ts}`);
+        fs.copyFileSync(this.configPath, backup);
+        const backups = fs.readdirSync(dir)
+          .filter(f => f.startsWith("config.js.bak-"))
+          .map(f => ({
+            name: f,
+            time: fs.statSync(path.join(dir, f)).mtime.getTime()
+          }))
+          .sort((a, b) => b.time - a.time);
+        backups.slice(3).forEach(b => {
+          fs.unlinkSync(path.join(dir, b.name));
+        });
+      }
+    } catch (err) {
+      Log.error("MMM-ModAdmin: could not create config backup", err);
+    }
   },
 
   readConfig() {
