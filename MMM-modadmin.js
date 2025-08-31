@@ -1,6 +1,6 @@
 Module.register("MMM-ModAdmin", {
   defaults: {
-    adminPort: 8081
+    adminPort: 5007
   },
 
   start() {

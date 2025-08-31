@@ -13,12 +13,12 @@ The project follows the structure and style of [MMM-Chores](https://github.com/P
 {
   module: "MMM-ModAdmin",
   config: {
-    adminPort: 8081
+    adminPort: 5007
   }
 }
 ```
 
-3. Start MagicMirror and open `http://<mirror-ip>:8081` in a browser to access the admin portal.
+3. Start MagicMirror and open `http://<mirror-ip>:5007` in a browser to access the admin portal.
 
 From the portal you can:
 - See all modules installed in the `modules` directory
