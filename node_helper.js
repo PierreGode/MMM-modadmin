@@ -19,7 +19,7 @@ module.exports = NodeHelper.create({
   },
 
   setupServer(config) {
-    const port = config.adminPort || 8081;
+    const port = config.adminPort || 5007;
     const app = express();
     app.use(bodyParser.json());
     app.use(express.static(path.join(__dirname, "public")));
