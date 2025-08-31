@@ -24,6 +24,10 @@ module.exports = NodeHelper.create({
     app.use(bodyParser.json());
     app.use(express.static(path.join(__dirname, "public")));
 
+    app.get("/", (req, res) => {
+      res.sendFile(path.join(__dirname, "public", "admin.html"));
+    });
+
     this.readConfig();
 
     app.get("/api/modules", (req, res) => {
@@ -47,7 +51,7 @@ module.exports = NodeHelper.create({
       });
     });
 
-    app.listen(port, () => {
+    app.listen(port, "0.0.0.0", () => {
       Log.log(`MMM-ModAdmin server listening on port ${port}`);
     });
   },
