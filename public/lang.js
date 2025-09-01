@@ -6,7 +6,8 @@ const translations = {
     save: "Save",
     cancel: "Cancel",
     settings: "Settings",
-    close: "Close"
+    close: "Close",
+    update: "Update"
   },
   sv: {
     title: "Moduladministratör",
@@ -15,7 +16,8 @@ const translations = {
     save: "Spara",
     cancel: "Avbryt",
     settings: "Inställningar",
-    close: "Stäng"
+    close: "Stäng",
+    update: "Uppdatera"
   }
 };
 
