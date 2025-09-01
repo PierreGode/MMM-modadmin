@@ -38,14 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const addFieldBtn = document.getElementById('addField');
-  if (addFieldBtn) {
-    addFieldBtn.addEventListener('click', () => {
-      const fields = document.getElementById('formFields');
-      fields.appendChild(createFieldRow('', '', true));
-    });
-  }
-
   const closeModalBtn = document.getElementById('closeModal');
   if (closeModalBtn) {
     closeModalBtn.addEventListener('click', () => {
@@ -56,20 +48,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveModuleBtn = document.getElementById('saveModule');
   if (saveModuleBtn) {
     saveModuleBtn.addEventListener('click', async () => {
-      const rows = document.querySelectorAll('#formFields .field-row');
-      const newConf = {};
-      rows.forEach(row => {
-        const keyInput = row.querySelector('.field-key');
-        const valueInput = row.querySelector('.field-value');
-        const key = keyInput.dataset.key || keyInput.value.trim();
-        if (!key) return;
-        const valStr = valueInput.value;
-        try {
-          newConf[key] = JSON.parse(valStr);
-        } catch (e) {
-          newConf[key] = valStr;
-        }
-      });
+      const textarea = document.getElementById('moduleJson');
+      let newConf = {};
+      try {
+        newConf = textarea.value ? JSON.parse(textarea.value) : {};
+      } catch (e) {
+        alert('Invalid JSON');
+        return;
+      }
 
       if (moduleMap[currentModule]) {
         moduleMap[currentModule].config = newConf;
@@ -93,41 +79,15 @@ document.addEventListener('DOMContentLoaded', () => {
   loadModules();
 });
 
-function createFieldRow(key = '', value = '', allowKey = false) {
-  const row = document.createElement('div');
-  row.className = 'field-row';
-
-  const keyInput = document.createElement('input');
-  keyInput.type = 'text';
-  keyInput.className = 'field-key';
-  keyInput.value = key;
-  if (!allowKey) {
-    keyInput.disabled = true;
-    keyInput.dataset.key = key;
-  }
-
-  const valueInput = document.createElement('input');
-  valueInput.type = 'text';
-  valueInput.className = 'field-value';
-  valueInput.value = value;
-
-  row.appendChild(keyInput);
-  row.appendChild(valueInput);
-  return row;
-}
-
 function openEditor(name) {
   currentModule = name;
   const modalEl = document.getElementById('editModal');
   const title = document.getElementById('modalTitle');
-  const fields = document.getElementById('formFields');
+  const textarea = document.getElementById('moduleJson');
   title.textContent = name;
-  fields.innerHTML = '';
 
   const conf = moduleMap[name] ? moduleMap[name].config || {} : {};
-  Object.keys(conf).forEach(key => {
-    fields.appendChild(createFieldRow(key, conf[key], false));
-  });
+  textarea.value = JSON.stringify(conf, null, 2);
 
   editModal = editModal || new bootstrap.Modal(modalEl);
   editModal.show();
