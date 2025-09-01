@@ -409,3 +409,13 @@ button {
     border-radius: 0.5rem;
   }
 }
+
+.status-btn.enabled {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.status-btn.disabled {
+  background-color: #ffc107;
+  color: #000;
+}

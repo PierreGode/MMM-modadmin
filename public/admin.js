@@ -140,6 +140,16 @@ async function loadModules() {
     actions.className = 'module-actions';
     card.appendChild(actions);
 
+    const toggleBtn = document.createElement('button');
+    const enabled = !!moduleMap[name];
+    setToggleButton(toggleBtn, enabled);
+    toggleBtn.addEventListener('click', async () => {
+      const res = await fetch(`/api/modules/${encodeURIComponent(name)}/toggle`, { method: 'POST' });
+      const data = await res.json();
+      setToggleButton(toggleBtn, data.enabled);
+    });
+    actions.appendChild(toggleBtn);
+
     const editBtn = document.createElement('button');
     editBtn.textContent = t('edit');
     editBtn.dataset.i18n = 'edit';
@@ -158,6 +168,11 @@ async function loadModules() {
   });
 
   applyTranslations();
+}
+
+function setToggleButton(btn, enabled) {
+  btn.textContent = enabled ? 'enabled' : 'disabled';
+  btn.className = enabled ? 'status-btn enabled' : 'status-btn disabled';
 }
 
 async function updateModule(name) {
