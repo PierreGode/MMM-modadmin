@@ -1,5 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
 
+/* ========================
+   THEME TOKENS (IDENTICAL)
+   ======================== */
 :root {
   --bg-grad: linear-gradient(135deg, #dfe9f3, #ffffff);
   --bg: #f5f7fa;
@@ -28,7 +31,9 @@
   --blur: 10px;
 }
 
-/* Global */
+/* =============
+   GLOBAL BASES
+   ============= */
 body {
   background: var(--bg-grad);
   color: var(--text);
@@ -36,14 +41,16 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  position: relative;
+  position: relative; /* for top-controls placement */
 }
 
 h1, h2 {
   font-weight: 600;
 }
 
-/* Hero */
+/* =====
+   HERO
+   ===== */
 .hero {
   background: linear-gradient(135deg, var(--hero-start), var(--hero-end));
   color: #fff;
@@ -55,7 +62,10 @@ h1, h2 {
   margin-top: 3rem;
 }
 
-/* Theme toggle */
+/* =========================================
+   TOP CONTROLS (theme toggle + language UI)
+   Matches second page layout & spacing
+   ========================================= */
 .top-controls {
   position: absolute;
   top: 30px;
@@ -64,6 +74,10 @@ h1, h2 {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.theme-switch {
+  position: static;
 }
 
 .btn-icon {
@@ -81,7 +95,47 @@ h1, h2 {
   cursor: pointer;
 }
 
-/* Cards */
+/* Language select (identical behavior) */
+.language-select {
+  width: 60px;
+  max-width: 80px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  line-height: 1.2;
+}
+
+/* If using Bootstrap .form-select */
+.language-select.form-select {
+  background-image: none !important;
+  background-color: transparent !important;
+  padding-right: 0.5rem !important;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  cursor: pointer;
+  height: auto !important;
+  font-size: 0.5rem !important;
+}
+
+/* Remove IE arrow */
+.language-select select::-ms-expand {
+  display: none;
+}
+
+/* ======
+   CARDS
+   ====== */
 .card-shadow {
   background: var(--card-bg);
   border: 1px solid var(--border);
@@ -90,12 +144,53 @@ h1, h2 {
   backdrop-filter: blur(var(--blur));
 }
 
+.card-shadow .card-header {
+  background: var(--card-bg);
+  border-bottom: none;
+  font-weight: 600;
+  border-top-left-radius: calc(1rem - 1px);
+  border-top-right-radius: calc(1rem - 1px);
+}
+
+/* Dark header tweak for analytics-like cards */
+[data-theme="dark"] .card-shadow .card-header {
+  background-color: #2c2c2c;
+  color: var(--text);
+}
+
 .module-card {
   padding: 1rem;
   margin-bottom: 1rem;
 }
 
-/* Input fields */
+/* Lists that live inside cards (rounded corners preserved) */
+.list-group-item {
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid transparent;
+  transition: background .15s ease;
+}
+.list-group-item:hover {
+  background: var(--list-hover);
+}
+.card-shadow .list-group-item {
+  border-radius: 0;
+}
+.card-shadow .list-group-item:first-child {
+  border-top-left-radius: calc(1rem - 1px);
+  border-top-right-radius: calc(1rem - 1px);
+}
+.card-shadow .list-group-item:last-child {
+  border-bottom-left-radius: calc(1rem - 1px);
+  border-bottom-right-radius: calc(1rem - 1px);
+}
+.card-shadow .list-group-item:only-child {
+  border-radius: calc(1rem - 1px);
+}
+
+/* ============
+   FORM INPUTS
+   ============ */
 .form-control,
 .form-select {
   background: var(--field-bg);
@@ -103,13 +198,42 @@ h1, h2 {
   border-color: var(--border);
   border-radius: 0.5rem;
 }
-
 [data-theme="dark"] .form-control,
 [data-theme="dark"] .form-select {
-  color: #000;
+  color: #000; /* keep content readable on light field-bg */
 }
 
-/* Modal */
+/* Icon buttons inside input groups align to input height */
+.input-group .btn-icon {
+  height: auto;
+}
+
+/* Completed/metadata styles used on second page */
+.task-done {
+  text-decoration: line-through;
+  opacity: .6;
+}
+.task-date {
+  color: #6c757d;
+}
+[data-theme="dark"] .task-date {
+  color: var(--text);
+}
+
+/* Oversized checkboxes to match second page */
+.form-check-input {
+  appearance: auto;
+  -webkit-appearance: checkbox;
+  -moz-appearance: checkbox;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 0.25rem !important;
+  border: 1px solid var(--text);
+}
+
+/* ======
+   MODAL
+   ====== */
 .modal {
   position: fixed;
   inset: 0;
@@ -118,11 +242,9 @@ h1, h2 {
   align-items: center;
   justify-content: center;
 }
-
 .modal.hidden {
   display: none;
 }
-
 .modal-content {
   width: 90%;
   max-width: 600px;
@@ -131,16 +253,16 @@ h1, h2 {
   padding: 1rem;
 }
 
-/* Field rows */
+/* ==================
+   CUSTOM FIELD ROWS
+   ================== */
 .field-row {
   display: flex;
   margin-bottom: 0.5rem;
 }
-
 .field-row input {
   flex: 1;
 }
-
 .field-row input + input {
   margin-left: 0.5rem;
 }
@@ -156,38 +278,104 @@ textarea {
   width: 100%;
   height: 120px;
 }
-
 button {
   margin-top: 0.5rem;
 }
 
-/* Language select */
-.language-select {
-  width: 60px;
-  font-weight: 600;
-  font-size: 0.8rem;
-  padding: 2px 6px;
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  background: var(--card-bg);
-  backdrop-filter: blur(var(--blur));
-  box-shadow: var(--shadow);
-  color: var(--text);
-}
-
-/* Responsive modules grid */
+/* ===========================
+   RESPONSIVE MODULES GRID
+   =========================== */
 #modules {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1rem;
 }
 
+/* ===============
+   DRAG & SORTING
+   =============== */
+.drag-handle {
+  cursor: grab;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
+.sortable-chosen {
+  background-color: rgba(0,0,0,0.05);
+}
+.sortable-ghost {
+  opacity: 0.5;
+}
+
+/* ==========
+   CALENDAR
+   ========== */
+#taskCalendar table {
+  table-layout: fixed;
+  background: var(--card-bg);
+  color: var(--text);
+  backdrop-filter: blur(var(--blur));
+}
+#taskCalendar th,
+#taskCalendar td {
+  border-color: var(--border);
+  background: var(--field-bg);
+  color: #000;
+}
+#taskCalendar td {
+  height: 100px;
+  vertical-align: top;
+  font-size: 0.8rem;
+}
+/* Calendar header text stays white in dark mode */
+[data-theme="dark"] #calTitle {
+  color: #fff;
+}
+
+/* ==========
+   PEOPLE UI
+   ========== */
+#peopleList small {
+  margin-left: 4px;
+  opacity: 0.7;
+  font-size: 0.8rem;
+}
+[data-theme="dark"] #peopleList small {
+  color: #fff !important;
+}
+
+/* ==========
+   LOGIN
+   ========== */
+#loginContainer {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url("img/forest.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 2000;
+}
+#loginContainer .card {
+  width: 320px;
+}
+
+/* =================
+   RESPONSIVE TWEAKS
+   ================= */
 @media (max-width: 600px) {
+  .hero { margin-top: 2rem; }
+}
+@media (max-width: 576px) {
   .top-controls {
-    top: 10px;
-    right: 10px;
+    top: 25px;
+    right: 15px;
   }
-  .hero {
-    margin-top: 2rem;
+  .language-select {
+    width: 70px;
+    border-radius: 0.5rem;
   }
 }
