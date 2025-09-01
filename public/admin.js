@@ -4,27 +4,83 @@ let currentModule = null;
 let editModal;
 let settingsModal;
 
-const root = document.documentElement;
-const themeToggle = document.getElementById('themeToggle');
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme) {
-  root.setAttribute('data-theme', savedTheme);
-}
-if (themeToggle) {
-  themeToggle.addEventListener('click', () => {
-    const newTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    root.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-  });
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const root = document.documentElement;
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme) {
+    root.setAttribute('data-theme', savedTheme);
+  }
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      const newTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+    });
+  }
 
-const settingsBtn = document.getElementById('settingsBtn');
-if (settingsBtn) {
-  settingsBtn.addEventListener('click', () => {
-    settingsModal = settingsModal || new bootstrap.Modal(document.getElementById('settingsModal'));
-    settingsModal.show();
-  });
-}
+  const settingsBtn = document.getElementById('settingsBtn');
+  if (settingsBtn) {
+    settingsBtn.addEventListener('click', () => {
+      settingsModal = settingsModal || new bootstrap.Modal(document.getElementById('settingsModal'));
+      settingsModal.show();
+    });
+  }
+
+  const addFieldBtn = document.getElementById('addField');
+  if (addFieldBtn) {
+    addFieldBtn.addEventListener('click', () => {
+      const fields = document.getElementById('formFields');
+      fields.appendChild(createFieldRow('', '', true));
+    });
+  }
+
+  const closeModalBtn = document.getElementById('closeModal');
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', () => {
+      editModal?.hide();
+    });
+  }
+
+  const saveModuleBtn = document.getElementById('saveModule');
+  if (saveModuleBtn) {
+    saveModuleBtn.addEventListener('click', async () => {
+      const rows = document.querySelectorAll('#formFields .field-row');
+      const newConf = {};
+      rows.forEach(row => {
+        const keyInput = row.querySelector('.field-key');
+        const valueInput = row.querySelector('.field-value');
+        const key = keyInput.dataset.key || keyInput.value.trim();
+        if (!key) return;
+        const valStr = valueInput.value;
+        try {
+          newConf[key] = JSON.parse(valStr);
+        } catch (e) {
+          newConf[key] = valStr;
+        }
+      });
+
+      if (moduleMap[currentModule]) {
+        moduleMap[currentModule].config = newConf;
+      } else {
+        config.modules = config.modules || [];
+        const entry = { module: currentModule, config: newConf };
+        config.modules.push(entry);
+        moduleMap[currentModule] = entry;
+      }
+
+      await fetch('/api/config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config)
+      });
+
+      editModal?.hide();
+    });
+  }
+
+  loadModules();
+});
 
 function createFieldRow(key = '', value = '', allowKey = false) {
   const row = document.createElement('div');
@@ -111,49 +167,4 @@ async function updateModule(name) {
   await new Promise(resolve => setTimeout(resolve, 10000));
   location.reload();
 }
-
-document.getElementById('addField').addEventListener('click', () => {
-  const fields = document.getElementById('formFields');
-  fields.appendChild(createFieldRow('', '', true));
-});
-
-document.getElementById('closeModal').addEventListener('click', () => {
-  editModal?.hide();
-});
-
-document.getElementById('saveModule').addEventListener('click', async () => {
-  const rows = document.querySelectorAll('#formFields .field-row');
-  const newConf = {};
-  rows.forEach(row => {
-    const keyInput = row.querySelector('.field-key');
-    const valueInput = row.querySelector('.field-value');
-    const key = keyInput.dataset.key || keyInput.value.trim();
-    if (!key) return;
-    const valStr = valueInput.value;
-    try {
-      newConf[key] = JSON.parse(valStr);
-    } catch (e) {
-      newConf[key] = valStr;
-    }
-  });
-
-  if (moduleMap[currentModule]) {
-    moduleMap[currentModule].config = newConf;
-  } else {
-    config.modules = config.modules || [];
-    const entry = { module: currentModule, config: newConf };
-    config.modules.push(entry);
-    moduleMap[currentModule] = entry;
-  }
-
-  await fetch('/api/config', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(config)
-  });
-
-  editModal?.hide();
-});
-
-loadModules();
 
