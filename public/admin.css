@@ -163,6 +163,27 @@ h1, h2 {
   margin-bottom: 1rem;
 }
 
+.module-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.module-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.module-actions button {
+  margin-top: 0;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--card-bg);
+  backdrop-filter: blur(var(--blur));
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+
 /* Lists that live inside cards (rounded corners preserved) */
 .list-group-item {
   background: var(--card-bg);

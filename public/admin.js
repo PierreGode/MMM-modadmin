@@ -80,22 +80,31 @@ async function loadModules() {
     const name = mod.name || mod;
     const card = document.createElement('div');
     card.className = 'module-card card-shadow';
+
+    const header = document.createElement('div');
+    header.className = 'module-header';
+    card.appendChild(header);
+
     const title = document.createElement('h2');
     title.textContent = name;
-    card.appendChild(title);
+    header.appendChild(title);
+
+    const actions = document.createElement('div');
+    actions.className = 'module-actions';
+    header.appendChild(actions);
 
     const editBtn = document.createElement('button');
     editBtn.textContent = t('edit');
     editBtn.dataset.i18n = 'edit';
     editBtn.addEventListener('click', () => openEditor(name));
-    card.appendChild(editBtn);
+    actions.appendChild(editBtn);
 
     if (mod.hasUpdate) {
       const upBtn = document.createElement('button');
       upBtn.textContent = t('update');
       upBtn.dataset.i18n = 'update';
       upBtn.addEventListener('click', () => updateModule(name));
-      card.appendChild(upBtn);
+      actions.appendChild(upBtn);
     }
 
     container.appendChild(card);
