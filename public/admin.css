@@ -259,18 +259,10 @@ h1, h2 {
 
 /* ======
    MODAL
-   ====== */
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.modal.hidden {
-  display: none;
-}
+   ======
+   Rely on Bootstrap's modal layout to avoid covering the entire page
+   with a fixed overlay. Only adjust the content box styling here.
+*/
 .modal-content {
   width: 90%;
   max-width: 600px;
