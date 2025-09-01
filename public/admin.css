@@ -165,21 +165,30 @@ h1, h2 {
 
 .module-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+}
+
+.module-header h2 {
+  flex: 1;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .module-actions {
   display: flex;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .module-actions button {
   margin-top: 0;
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 0.5rem;
-  background: var(--card-bg);
-  backdrop-filter: blur(var(--blur));
+  background: linear-gradient(135deg, var(--hero-start), var(--hero-end));
+  color: #fff;
   box-shadow: var(--shadow);
   cursor: pointer;
 }
