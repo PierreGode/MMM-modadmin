@@ -170,6 +170,11 @@ h1, h2 {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--text);
+}
+
+[data-theme="dark"] .module-card h2 {
+  color: #fff;
 }
 
 .module-actions {
