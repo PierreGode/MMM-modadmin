@@ -81,17 +81,13 @@ async function loadModules() {
     const card = document.createElement('div');
     card.className = 'module-card card-shadow';
 
-    const header = document.createElement('div');
-    header.className = 'module-header';
-    card.appendChild(header);
-
     const title = document.createElement('h2');
     title.textContent = name;
-    header.appendChild(title);
+    card.appendChild(title);
 
     const actions = document.createElement('div');
     actions.className = 'module-actions';
-    header.appendChild(actions);
+    card.appendChild(actions);
 
     const editBtn = document.createElement('button');
     editBtn.textContent = t('edit');
@@ -115,6 +111,7 @@ async function loadModules() {
 
 async function updateModule(name) {
   await fetch(`/api/modules/${encodeURIComponent(name)}/update`, { method: 'POST' });
+  await new Promise(resolve => setTimeout(resolve, 10000));
   location.reload();
 }
 

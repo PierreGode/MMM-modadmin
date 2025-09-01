@@ -161,16 +161,11 @@ h1, h2 {
 .module-card {
   padding: 1rem;
   margin-bottom: 1rem;
-}
-
-.module-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
 }
 
-.module-header h2 {
-  flex: 1;
+.module-card h2 {
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -181,6 +176,7 @@ h1, h2 {
   display: flex;
   gap: 0.5rem;
   flex-shrink: 0;
+  margin-top: auto;
 }
 
 .module-actions button {
