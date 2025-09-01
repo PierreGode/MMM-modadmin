@@ -45,26 +45,45 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const addSettingBtn = document.getElementById('addSetting');
+  if (addSettingBtn) {
+    addSettingBtn.addEventListener('click', () => {
+      const form = document.getElementById('moduleForm');
+      form.appendChild(createConfigRow('', ''));
+    });
+  }
+
   const saveModuleBtn = document.getElementById('saveModule');
   if (saveModuleBtn) {
     saveModuleBtn.addEventListener('click', async () => {
-      const textarea = document.getElementById('moduleJson');
-      let newConf = {};
-      try {
-        newConf = textarea.value ? JSON.parse(textarea.value) : {};
-      } catch (e) {
-        alert('Invalid JSON');
-        return;
-      }
+      const form = document.getElementById('moduleForm');
+      const entry = moduleMap[currentModule] || { module: currentModule };
+      entry.config = {};
 
-      if (moduleMap[currentModule]) {
-        moduleMap[currentModule].config = newConf;
-      } else {
+      form.querySelectorAll('input[data-location="root"]').forEach(input => {
+        let val = input.value;
+        if (val === '') {
+          delete entry[input.dataset.key];
+          return;
+        }
+        try { val = JSON.parse(val); } catch (e) {}
+        entry[input.dataset.key] = val;
+      });
+
+      form.querySelectorAll('.config-row').forEach(row => {
+        const key = row.querySelector('input.key').value;
+        if (!key) return;
+        let val = row.querySelector('input.value').value;
+        if (val === '') return;
+        try { val = JSON.parse(val); } catch (e) {}
+        entry.config[key] = val;
+      });
+
+      if (!moduleMap[currentModule]) {
         config.modules = config.modules || [];
-        const entry = { module: currentModule, config: newConf };
         config.modules.push(entry);
-        moduleMap[currentModule] = entry;
       }
+      moduleMap[currentModule] = entry;
 
       await fetch('/api/config', {
         method: 'PUT',
@@ -83,11 +102,19 @@ function openEditor(name) {
   currentModule = name;
   const modalEl = document.getElementById('editModal');
   const title = document.getElementById('modalTitle');
-  const textarea = document.getElementById('moduleJson');
+  const form = document.getElementById('moduleForm');
   title.textContent = name;
 
-  const conf = moduleMap[name] ? moduleMap[name].config || {} : {};
-  textarea.value = JSON.stringify(conf, null, 2);
+  const entry = moduleMap[name] || { module: name, config: {} };
+  form.innerHTML = '';
+  form.appendChild(createRootRow('position', entry.position || ''));
+  Object.keys(entry).forEach(k => {
+    if (['module', 'position', 'config'].includes(k)) return;
+    form.appendChild(createRootRow(k, entry[k]));
+  });
+  Object.keys(entry.config || {}).forEach(k => {
+    form.appendChild(createConfigRow(k, entry.config[k]));
+  });
 
   editModal = editModal || new bootstrap.Modal(modalEl);
   editModal.show();
@@ -137,5 +164,41 @@ async function updateModule(name) {
   await fetch(`/api/modules/${encodeURIComponent(name)}/update`, { method: 'POST' });
   await new Promise(resolve => setTimeout(resolve, 10000));
   location.reload();
+}
+
+function createRootRow(key, value) {
+  const div = document.createElement('div');
+  div.className = 'mb-3';
+  const label = document.createElement('label');
+  label.className = 'form-label';
+  label.textContent = key;
+  const input = document.createElement('input');
+  input.className = 'form-control';
+  input.value = typeof value === 'object' ? JSON.stringify(value) : value;
+  input.dataset.key = key;
+  input.dataset.location = 'root';
+  div.appendChild(label);
+  div.appendChild(input);
+  return div;
+}
+
+function createConfigRow(key, value) {
+  const div = document.createElement('div');
+  div.className = 'row g-2 align-items-center mb-2 config-row';
+  const keyCol = document.createElement('div');
+  keyCol.className = 'col-5';
+  const keyInput = document.createElement('input');
+  keyInput.className = 'form-control key';
+  keyInput.value = key;
+  keyCol.appendChild(keyInput);
+  const valCol = document.createElement('div');
+  valCol.className = 'col-7';
+  const valInput = document.createElement('input');
+  valInput.className = 'form-control value';
+  valInput.value = typeof value === 'object' ? JSON.stringify(value) : value;
+  valCol.appendChild(valInput);
+  div.appendChild(keyCol);
+  div.appendChild(valCol);
+  return div;
 }
 
