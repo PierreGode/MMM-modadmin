@@ -16,6 +16,20 @@ if (themeToggle) {
   });
 }
 
+const settingsBtn = document.getElementById('settingsBtn');
+if (settingsBtn) {
+  settingsBtn.addEventListener('click', () => {
+    document.getElementById('settingsModal').classList.remove('hidden');
+  });
+}
+
+const closeSettings = document.getElementById('closeSettings');
+if (closeSettings) {
+  closeSettings.addEventListener('click', () => {
+    document.getElementById('settingsModal').classList.add('hidden');
+  });
+}
+
 function createFieldRow(key = '', value = '', allowKey = false) {
   const row = document.createElement('div');
   row.className = 'field-row';
@@ -70,12 +84,15 @@ async function loadModules() {
     card.appendChild(title);
 
     const btn = document.createElement('button');
-    btn.textContent = 'Edit';
+    btn.textContent = t('edit');
+    btn.dataset.i18n = 'edit';
     btn.addEventListener('click', () => openEditor(name));
     card.appendChild(btn);
 
     container.appendChild(card);
   });
+
+  applyTranslations();
 }
 
 document.getElementById('addField').addEventListener('click', () => {
