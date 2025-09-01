@@ -1,44 +1,124 @@
 <!DOCTYPE html>
-<html data-theme="light">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MagicMirror Module Admin</title>
+
+  <!-- Bootstrap + Icons + Inter to match the second page -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- Your unified CSS (the one I sent earlier) -->
   <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
-  <div class="top-controls">
-    <button id="themeToggle" class="btn-icon" title="Toggle theme">🌓</button>
-    <select id="languageSelect" class="language-select">
-      <option value="en">EN</option>
-      <option value="sv">SV</option>
-    </select>
-    <button id="settingsBtn" class="btn-icon" title="Settings">⚙️</button>
-  </div>
-  <div class="hero">
-    <h1 data-i18n="title">Module Admin</h1>
-  </div>
-  <div id="modules"></div>
-  <div id="editModal" class="modal hidden">
-    <div class="modal-content card-shadow">
-      <h2 id="modalTitle"></h2>
-      <div id="formFields"></div>
-      <div class="modal-actions">
-        <button id="addField" data-i18n="addSetting">Add Setting</button>
-        <button id="saveModule" data-i18n="save">Save</button>
-        <button id="closeModal" data-i18n="cancel">Cancel</button>
+  <div class="container py-4 flex-grow-1 position-relative">
+
+    <!-- Top controls (same layout & feel) -->
+    <div class="top-controls">
+      <div class="theme-switch">
+        <button id="themeToggle" class="btn btn-outline-secondary btn-icon" title="Toggle theme">
+          <i class="bi" id="themeIcon"></i>
+        </button>
+      </div>
+
+      <!-- Language select (same placement/size as the other page) -->
+      <select id="languageSelect" class="language-select form-select">
+        <option value="en">EN</option>
+        <option value="sv">SV</option>
+      </select>
+
+      <button id="settingsBtn" class="btn btn-outline-secondary btn-icon" title="Settings">
+        <i class="bi bi-gear-fill"></i>
+      </button>
+    </div>
+
+    <!-- Hero (gradient pill, identical spacing/radius) -->
+    <div class="hero mb-4">
+      <h1 class="mb-0" data-i18n="title">Module Admin</h1>
+      <small class="opacity-75" id="subtitleHeader">Manage modules & settings</small>
+    </div>
+
+    <!-- Main content area -->
+    <div class="row g-4">
+      <div class="col-12">
+        <!-- Modules container gets the glassy card look via card-shadow -->
+        <div class="card card-shadow">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <span>Modules</span>
+            <span class="badge bg-light text-dark fw-normal">
+              <i class="bi bi-boxes me-1"></i> Manager
+            </span>
+          </div>
+          <div class="card-body">
+            <!-- Your dynamic modules grid -->
+            <div id="modules" class="row g-3"></div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-  <div id="settingsModal" class="modal hidden">
-    <div class="modal-content card-shadow">
-      <h2 data-i18n="settings">Settings</h2>
-      <div class="modal-actions">
-        <button id="closeSettings" data-i18n="close">Close</button>
+
+    <!-- Edit Modal (Bootstrap structure + your IDs; styled like the other page) -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content card-shadow">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle">Edit Module</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" id="closeModal"></button>
+          </div>
+          <div class="modal-body">
+            <div id="formFields"></div>
+            <div class="d-flex justify-content-end gap-2 mt-3 modal-actions">
+              <button id="addField" class="btn btn-outline-secondary" data-i18n="addSetting">Add Setting</button>
+              <button id="saveModule" class="btn btn-primary" data-i18n="save">Save</button>
+              <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="cancel">Cancel</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+
+    <!-- Settings Modal (Bootstrap structure + same glass style) -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content card-shadow">
+          <div class="modal-header">
+            <h5 class="modal-title" data-i18n="settings">Settings</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" id="closeSettings"></button>
+          </div>
+          <div class="modal-body">
+            <p class="text-muted mb-0">General settings will appear here.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
+
+  <footer class="text-center py-3 small text-muted">
+    Built with Bootstrap • MagicMirror Admin
+  </footer>
+
+  <!-- Scripts (order matches the other page) -->
   <script src="lang.js"></script>
   <script src="admin.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Optional: small helper to set the theme icon on load -->
+  <script>
+    (function () {
+      const html = document.documentElement;
+      const icon = document.getElementById('themeIcon');
+      const setIcon = () => icon && (icon.className = html.getAttribute('data-theme') === 'dark' ? 'bi bi-moon-stars' : 'bi bi-brightness-high');
+      setIcon();
+      document.getElementById('themeToggle')?.addEventListener('click', () => {
+        const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        setIcon();
+      });
+    })();
+  </script>
 </body>
 </html>
