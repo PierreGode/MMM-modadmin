@@ -10,15 +10,12 @@ The project follows the structure and style of [MMM-Chores](https://github.com/P
 2. Add the module to your `config.js` within the `modules` array:
 
 ```js
-modules: [
-  {
-    module: "MMM-ModAdmin",
-    config: {
-      adminPort: 5007
-    }
-  },
-  // other modules
-]
+{
+  module: "MMM-ModAdmin",
+  config: {
+    adminPort: 5007,
+  }
+},
 ```
 
 3. Start MagicMirror and open `http://<mirror-ip>:5007` in a browser to access the admin portal.
