@@ -2,15 +2,21 @@
 <html data-theme="light">
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MagicMirror Module Admin</title>
   <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
   <div class="top-controls">
-    <button id="themeToggle" class="btn-icon">🌓</button>
+    <button id="themeToggle" class="btn-icon" title="Toggle theme">🌓</button>
+    <select id="languageSelect" class="language-select">
+      <option value="en">EN</option>
+      <option value="sv">SV</option>
+    </select>
+    <button id="settingsBtn" class="btn-icon" title="Settings">⚙️</button>
   </div>
   <div class="hero">
-    <h1>Module Admin</h1>
+    <h1 data-i18n="title">Module Admin</h1>
   </div>
   <div id="modules"></div>
   <div id="editModal" class="modal hidden">
@@ -18,12 +24,21 @@
       <h2 id="modalTitle"></h2>
       <div id="formFields"></div>
       <div class="modal-actions">
-        <button id="addField">Add Setting</button>
-        <button id="saveModule">Save</button>
-        <button id="closeModal">Cancel</button>
+        <button id="addField" data-i18n="addSetting">Add Setting</button>
+        <button id="saveModule" data-i18n="save">Save</button>
+        <button id="closeModal" data-i18n="cancel">Cancel</button>
       </div>
     </div>
   </div>
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-content card-shadow">
+      <h2 data-i18n="settings">Settings</h2>
+      <div class="modal-actions">
+        <button id="closeSettings" data-i18n="close">Close</button>
+      </div>
+    </div>
+  </div>
+  <script src="lang.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>
