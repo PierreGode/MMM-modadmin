@@ -1,9 +1,51 @@
+let config;
+let moduleMap = {};
+let currentModule = null;
+
+function createFieldRow(key = '', value = '', allowKey = false) {
+  const row = document.createElement('div');
+  row.className = 'field-row';
+
+  const keyInput = document.createElement('input');
+  keyInput.type = 'text';
+  keyInput.className = 'field-key';
+  keyInput.value = key;
+  if (!allowKey) {
+    keyInput.disabled = true;
+    keyInput.dataset.key = key;
+  }
+
+  const valueInput = document.createElement('input');
+  valueInput.type = 'text';
+  valueInput.className = 'field-value';
+  valueInput.value = value;
+
+  row.appendChild(keyInput);
+  row.appendChild(valueInput);
+  return row;
+}
+
+function openEditor(name) {
+  currentModule = name;
+  const modal = document.getElementById('editModal');
+  const title = document.getElementById('modalTitle');
+  const fields = document.getElementById('formFields');
+  title.textContent = name;
+  fields.innerHTML = '';
+
+  const conf = moduleMap[name] ? moduleMap[name].config || {} : {};
+  Object.keys(conf).forEach(key => {
+    fields.appendChild(createFieldRow(key, conf[key], false));
+  });
+
+  modal.classList.remove('hidden');
+}
+
 async function loadModules() {
   const modules = await fetch('/api/modules').then(r => r.json());
-  const config = await fetch('/api/config').then(r => r.json());
+  config = await fetch('/api/config').then(r => r.json());
   const container = document.getElementById('modules');
 
-  const moduleMap = {};
   (config.modules || []).forEach(m => { moduleMap[m.module] = m; });
 
   modules.forEach(name => {
@@ -13,31 +55,57 @@ async function loadModules() {
     title.textContent = name;
     card.appendChild(title);
 
-    const textarea = document.createElement('textarea');
-    const conf = moduleMap[name] ? moduleMap[name].config || {} : {};
-    textarea.value = JSON.stringify(conf, null, 2);
-    card.appendChild(textarea);
-
     const btn = document.createElement('button');
-    btn.textContent = 'Save';
-    btn.addEventListener('click', async () => {
-      const newConf = JSON.parse(textarea.value || '{}');
-      if (moduleMap[name]) {
-        moduleMap[name].config = newConf;
-      } else {
-        config.modules = config.modules || [];
-        config.modules.push({ module: name, config: newConf });
-      }
-      await fetch('/api/config', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config)
-      });
-    });
+    btn.textContent = 'Edit';
+    btn.addEventListener('click', () => openEditor(name));
     card.appendChild(btn);
 
     container.appendChild(card);
   });
 }
 
+document.getElementById('addField').addEventListener('click', () => {
+  const fields = document.getElementById('formFields');
+  fields.appendChild(createFieldRow('', '', true));
+});
+
+document.getElementById('closeModal').addEventListener('click', () => {
+  document.getElementById('editModal').classList.add('hidden');
+});
+
+document.getElementById('saveModule').addEventListener('click', async () => {
+  const rows = document.querySelectorAll('#formFields .field-row');
+  const newConf = {};
+  rows.forEach(row => {
+    const keyInput = row.querySelector('.field-key');
+    const valueInput = row.querySelector('.field-value');
+    const key = keyInput.dataset.key || keyInput.value.trim();
+    if (!key) return;
+    const valStr = valueInput.value;
+    try {
+      newConf[key] = JSON.parse(valStr);
+    } catch (e) {
+      newConf[key] = valStr;
+    }
+  });
+
+  if (moduleMap[currentModule]) {
+    moduleMap[currentModule].config = newConf;
+  } else {
+    config.modules = config.modules || [];
+    const entry = { module: currentModule, config: newConf };
+    config.modules.push(entry);
+    moduleMap[currentModule] = entry;
+  }
+
+  await fetch('/api/config', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config)
+  });
+
+  document.getElementById('editModal').classList.add('hidden');
+});
+
 loadModules();
+

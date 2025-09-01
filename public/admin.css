@@ -23,3 +23,48 @@ textarea {
 button {
   margin-top: 0.5rem;
 }
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 4px;
+  width: 300px;
+  max-height: 90%;
+  overflow-y: auto;
+}
+
+.field-row {
+  display: flex;
+  margin-bottom: 0.5rem;
+}
+
+.field-row input {
+  flex: 1;
+}
+
+.field-row input + input {
+  margin-left: 0.5rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}

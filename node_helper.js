@@ -8,7 +8,12 @@ const path = require("path");
 module.exports = NodeHelper.create({
   start() {
     this.configData = {};
-    this.configPath = path.resolve(__dirname, "..", "..", "config", "config.js");
+    const candidates = [
+      path.resolve(__dirname, "..", "..", "config", "config.js"),
+      path.resolve(__dirname, "..", "..", "..", "config", "config.js"),
+      path.resolve(process.cwd(), "config", "config.js")
+    ];
+    this.configPath = candidates.find(p => fs.existsSync(p)) || candidates[0];
     this.modulesDir = path.resolve(__dirname, "..");
   },
 
@@ -49,6 +54,7 @@ module.exports = NodeHelper.create({
       this.backupConfig();
       fs.writeFile(this.configPath, content, err => {
         if (err) return res.status(500).json({ error: err.message });
+        this.readConfig();
         res.json({ success: true });
       });
     });
