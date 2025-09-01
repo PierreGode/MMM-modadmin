@@ -1,6 +1,8 @@
 let config;
 let moduleMap = {};
 let currentModule = null;
+let editModal;
+let settingsModal;
 
 const root = document.documentElement;
 const themeToggle = document.getElementById('themeToggle');
@@ -19,14 +21,8 @@ if (themeToggle) {
 const settingsBtn = document.getElementById('settingsBtn');
 if (settingsBtn) {
   settingsBtn.addEventListener('click', () => {
-    document.getElementById('settingsModal').classList.remove('hidden');
-  });
-}
-
-const closeSettings = document.getElementById('closeSettings');
-if (closeSettings) {
-  closeSettings.addEventListener('click', () => {
-    document.getElementById('settingsModal').classList.add('hidden');
+    settingsModal = settingsModal || new bootstrap.Modal(document.getElementById('settingsModal'));
+    settingsModal.show();
   });
 }
 
@@ -55,7 +51,7 @@ function createFieldRow(key = '', value = '', allowKey = false) {
 
 function openEditor(name) {
   currentModule = name;
-  const modal = document.getElementById('editModal');
+  const modalEl = document.getElementById('editModal');
   const title = document.getElementById('modalTitle');
   const fields = document.getElementById('formFields');
   title.textContent = name;
@@ -66,7 +62,8 @@ function openEditor(name) {
     fields.appendChild(createFieldRow(key, conf[key], false));
   });
 
-  modal.classList.remove('hidden');
+  editModal = editModal || new bootstrap.Modal(modalEl);
+  editModal.show();
 }
 
 async function loadModules() {
@@ -121,7 +118,7 @@ document.getElementById('addField').addEventListener('click', () => {
 });
 
 document.getElementById('closeModal').addEventListener('click', () => {
-  document.getElementById('editModal').classList.add('hidden');
+  editModal?.hide();
 });
 
 document.getElementById('saveModule').addEventListener('click', async () => {
@@ -155,7 +152,7 @@ document.getElementById('saveModule').addEventListener('click', async () => {
     body: JSON.stringify(config)
   });
 
-  document.getElementById('editModal').classList.add('hidden');
+  editModal?.hide();
 });
 
 loadModules();
