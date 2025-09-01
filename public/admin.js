@@ -76,23 +76,37 @@ async function loadModules() {
 
   (config.modules || []).forEach(m => { moduleMap[m.module] = m; });
 
-  modules.forEach(name => {
+  modules.forEach(mod => {
+    const name = mod.name || mod;
     const card = document.createElement('div');
     card.className = 'module-card card-shadow';
     const title = document.createElement('h2');
     title.textContent = name;
     card.appendChild(title);
 
-    const btn = document.createElement('button');
-    btn.textContent = t('edit');
-    btn.dataset.i18n = 'edit';
-    btn.addEventListener('click', () => openEditor(name));
-    card.appendChild(btn);
+    const editBtn = document.createElement('button');
+    editBtn.textContent = t('edit');
+    editBtn.dataset.i18n = 'edit';
+    editBtn.addEventListener('click', () => openEditor(name));
+    card.appendChild(editBtn);
+
+    if (mod.hasUpdate) {
+      const upBtn = document.createElement('button');
+      upBtn.textContent = t('update');
+      upBtn.dataset.i18n = 'update';
+      upBtn.addEventListener('click', () => updateModule(name));
+      card.appendChild(upBtn);
+    }
 
     container.appendChild(card);
   });
 
   applyTranslations();
+}
+
+async function updateModule(name) {
+  await fetch(`/api/modules/${encodeURIComponent(name)}/update`, { method: 'POST' });
+  location.reload();
 }
 
 document.getElementById('addField').addEventListener('click', () => {

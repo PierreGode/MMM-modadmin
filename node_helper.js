@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const Log = require("logger");
 const fs = require("fs");
 const path = require("path");
+const { exec } = require("child_process");
 
 module.exports = NodeHelper.create({
   start() {
@@ -35,11 +36,23 @@ module.exports = NodeHelper.create({
 
     this.readConfig();
 
-    app.get("/api/modules", (req, res) => {
-      fs.readdir(this.modulesDir, { withFileTypes: true }, (err, files) => {
+    app.get("/api/modules", async (req, res) => {
+      fs.readdir(this.modulesDir, { withFileTypes: true }, async (err, files) => {
         if (err) return res.status(500).json({ error: err.message });
         const mods = files.filter(f => f.isDirectory()).map(f => f.name);
-        res.json(mods);
+        const detailed = await Promise.all(mods.map(name => this.checkModuleUpdate(name)));
+        res.json(detailed);
+      });
+    });
+
+    app.post("/api/modules/:name/update", (req, res) => {
+      const name = req.params.name;
+      const modPath = path.join(this.modulesDir, name);
+      exec(`git -C "${modPath}" pull`, (err, stdout, stderr) => {
+        if (err) return res.status(500).json({ error: err.message });
+        // Try to restart MagicMirror. This may fail silently if not using pm2.
+        exec("pm2 restart mm || pm2 restart MagicMirror", () => {});
+        res.json({ success: true, output: stdout });
       });
     });
 
@@ -61,6 +74,23 @@ module.exports = NodeHelper.create({
 
     app.listen(port, "0.0.0.0", () => {
       Log.log(`MMM-ModAdmin server listening on port ${port}`);
+    });
+  },
+
+  checkModuleUpdate(name) {
+    return new Promise(resolve => {
+      const modPath = path.join(this.modulesDir, name);
+      if (!fs.existsSync(path.join(modPath, ".git"))) {
+        return resolve({ name, hasUpdate: false });
+      }
+      exec(`git -C "${modPath}" fetch`, err => {
+        if (err) return resolve({ name, hasUpdate: false });
+        exec(`git -C "${modPath}" status -uno`, (err2, stdout) => {
+          if (err2) return resolve({ name, hasUpdate: false });
+          const hasUpdate = stdout.includes("behind");
+          resolve({ name, hasUpdate });
+        });
+      });
     });
   },
 
