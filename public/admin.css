@@ -278,11 +278,18 @@ h1, h2 {
   display: flex;
   margin-bottom: 0.5rem;
 }
-.field-row input {
+.field-row .field-key {
+  flex: 0 0 30%;
+}
+.field-row .field-value {
   flex: 1;
 }
 .field-row input + input {
   margin-left: 0.5rem;
+}
+
+.modal-dialog {
+  max-width: 700px;
 }
 
 .modal-actions {

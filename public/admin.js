@@ -7,15 +7,26 @@ let settingsModal;
 document.addEventListener('DOMContentLoaded', () => {
   const root = document.documentElement;
   const themeToggle = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme) {
     root.setAttribute('data-theme', savedTheme);
   }
+  const setIcon = () => {
+    if (themeIcon) {
+      themeIcon.className =
+        root.getAttribute('data-theme') === 'dark'
+          ? 'bi bi-moon-stars'
+          : 'bi bi-brightness-high';
+    }
+  };
+  setIcon();
   if (themeToggle) {
     themeToggle.addEventListener('click', () => {
       const newTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
       root.setAttribute('data-theme', newTheme);
       localStorage.setItem('theme', newTheme);
+      setIcon();
     });
   }
 
