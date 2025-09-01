@@ -2,6 +2,20 @@ let config;
 let moduleMap = {};
 let currentModule = null;
 
+const root = document.documentElement;
+const themeToggle = document.getElementById('themeToggle');
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme) {
+  root.setAttribute('data-theme', savedTheme);
+}
+if (themeToggle) {
+  themeToggle.addEventListener('click', () => {
+    const newTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  });
+}
+
 function createFieldRow(key = '', value = '', allowKey = false) {
   const row = document.createElement('div');
   row.className = 'field-row';
@@ -50,7 +64,7 @@ async function loadModules() {
 
   modules.forEach(name => {
     const card = document.createElement('div');
-    card.className = 'module-card';
+    card.className = 'module-card card-shadow';
     const title = document.createElement('h2');
     title.textContent = name;
     card.appendChild(title);

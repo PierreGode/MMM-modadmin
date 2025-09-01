@@ -1,15 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="light">
 <head>
   <meta charset="utf-8" />
   <title>MagicMirror Module Admin</title>
   <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
-  <h1>Module Admin</h1>
+  <div class="top-controls">
+    <button id="themeToggle" class="btn-icon">🌓</button>
+  </div>
+  <div class="hero">
+    <h1>Module Admin</h1>
+  </div>
   <div id="modules"></div>
   <div id="editModal" class="modal hidden">
-    <div class="modal-content">
+    <div class="modal-content card-shadow">
       <h2 id="modalTitle"></h2>
       <div id="formFields"></div>
       <div class="modal-actions">
