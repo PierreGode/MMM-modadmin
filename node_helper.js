@@ -44,7 +44,8 @@ module.exports = NodeHelper.create({
 
     app.put("/api/config", (req, res) => {
       this.configData = req.body;
-      const content = "module.exports = " + JSON.stringify(this.configData, null, 2) + ";\n";
+      const json = JSON.stringify(this.configData, null, 2);
+      const content = `let config = ${json};\nif (typeof module !== "undefined") {\n  module.exports = config;\n}\n`;
       this.backupConfig();
       fs.writeFile(this.configPath, content, err => {
         if (err) return res.status(500).json({ error: err.message });
