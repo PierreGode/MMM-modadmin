@@ -56,6 +56,16 @@ module.exports = NodeHelper.create({
       });
     });
 
+    app.post("/api/modules/:name/toggle", (req, res) => {
+      const name = req.params.name;
+      const result = this.toggleModule(name);
+      if (result === null) {
+        return res.status(404).json({ error: "Module not found" });
+      }
+      exec("pm2 restart mm || pm2 restart MagicMirror", () => {});
+      res.json({ success: true, enabled: result });
+    });
+
     app.get("/api/config", (req, res) => {
       res.json(this.configData);
     });
@@ -92,6 +102,29 @@ module.exports = NodeHelper.create({
         });
       });
     });
+  },
+
+  toggleModule(name) {
+    try {
+      const content = fs.readFileSync(this.configPath, "utf8");
+      const disabledRegex = new RegExp(`\/\*\s*({\s*module:\s*['"]${name}['"][\s\S]*?}\s*,?\s*)\*\/`, 'm');
+      if (disabledRegex.test(content)) {
+        const newContent = content.replace(disabledRegex, '$1');
+        fs.writeFileSync(this.configPath, newContent);
+        this.readConfig();
+        return true;
+      }
+      const activeRegex = new RegExp(`({\s*module:\s*['"]${name}['"][\s\S]*?}\s*,?\s*)`, 'm');
+      if (activeRegex.test(content)) {
+        const newContent = content.replace(activeRegex, '/*$1*/\n');
+        fs.writeFileSync(this.configPath, newContent);
+        this.readConfig();
+        return false;
+      }
+    } catch (err) {
+      Log.error("MMM-ModAdmin: could not toggle module", err);
+    }
+    return null;
   },
 
   backupConfig() {
