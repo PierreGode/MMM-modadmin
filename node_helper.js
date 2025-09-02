@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const Log = require("logger");
 const fs = require("fs");
 const path = require("path");
-const { exec } = require("child_process");
+const { exec, execFile } = require("child_process");
 
 module.exports = NodeHelper.create({
   start() {
@@ -47,8 +47,11 @@ module.exports = NodeHelper.create({
 
     app.post("/api/modules/:name/update", (req, res) => {
       const name = req.params.name;
-      const modPath = path.join(this.modulesDir, name);
-      exec(`git -C "${modPath}" pull`, (err, stdout, stderr) => {
+      const modPath = path.resolve(this.modulesDir, name);
+      if (!modPath.startsWith(this.modulesDir)) {
+        return res.status(400).json({ error: "Invalid module name" });
+      }
+      execFile("git", ["-C", modPath, "pull"], (err, stdout) => {
         if (err) return res.status(500).json({ error: err.message });
         // Try to restart MagicMirror. This may fail silently if not using pm2.
         exec("pm2 restart mm || pm2 restart MagicMirror", () => {});
@@ -93,9 +96,9 @@ module.exports = NodeHelper.create({
       if (!fs.existsSync(path.join(modPath, ".git"))) {
         return resolve({ name, hasUpdate: false });
       }
-      exec(`git -C "${modPath}" fetch`, err => {
+      execFile("git", ["-C", modPath, "fetch"], err => {
         if (err) return resolve({ name, hasUpdate: false });
-        exec(`git -C "${modPath}" status -uno`, (err2, stdout) => {
+        execFile("git", ["-C", modPath, "status", "-uno"], (err2, stdout) => {
           if (err2) return resolve({ name, hasUpdate: false });
           const hasUpdate = stdout.includes("behind");
           resolve({ name, hasUpdate });
@@ -104,17 +107,22 @@ module.exports = NodeHelper.create({
     });
   },
 
+  escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|\[\]\\]/g, "\\$&");
+  },
+
   toggleModule(name) {
     try {
       const content = fs.readFileSync(this.configPath, "utf8");
-      const disabledRegex = new RegExp(`\/\*\s*({\s*module:\s*['"]${name}['"][\s\S]*?}\s*,?\s*)\*\/`, 'm');
+      const escaped = this.escapeRegex(name);
+      const disabledRegex = new RegExp(`\/\*\s*({\s*module:\s*['"]${escaped}['"][\s\S]*?}\s*,?\s*)\*\/`, "m");
       if (disabledRegex.test(content)) {
-        const newContent = content.replace(disabledRegex, '$1');
+        const newContent = content.replace(disabledRegex, "$1");
         fs.writeFileSync(this.configPath, newContent);
         this.readConfig();
         return true;
       }
-      const activeRegex = new RegExp(`({\s*module:\s*['"]${name}['"][\s\S]*?}\s*,?\s*)`, 'm');
+      const activeRegex = new RegExp(`({\s*module:\s*['"]${escaped}['"][\s\S]*?}\s*,?\s*)`, "m");
       if (activeRegex.test(content)) {
         const newContent = content.replace(activeRegex, '/*$1*/\n');
         fs.writeFileSync(this.configPath, newContent);
