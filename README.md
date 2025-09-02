@@ -1,6 +1,6 @@
 # MMM-ModAdmin
 
-## NOD READY TO USE!
+## NOT READY TO USE!
 
 A MagicMirror² module that exposes a web-based admin interface for managing other modules. It renders nothing on the mirror itself; instead it hosts a small web application where you can inspect installed modules and edit their configuration from a browser.
 
