@@ -5,10 +5,12 @@ const Log = require("logger");
 const fs = require("fs");
 const path = require("path");
 const { exec, execFile } = require("child_process");
+const serialize = require("serialize-javascript");
 
 module.exports = NodeHelper.create({
   start() {
     this.configData = {};
+    this.configEnvelope = null;
     const candidates = [
       path.resolve(__dirname, "..", "..", "config", "config.js"),
       path.resolve(__dirname, "..", "..", "..", "config", "config.js"),
@@ -75,8 +77,13 @@ module.exports = NodeHelper.create({
 
     app.put("/api/config", (req, res) => {
       this.configData = req.body;
-      const json = JSON.stringify(this.configData, null, 2);
-      const content = `let config = ${json};\nif (typeof module !== "undefined") {\n  module.exports = config;\n}\n`;
+      let content;
+      try {
+        content = this.formatConfigForWrite(this.configData);
+      } catch (err) {
+        Log.error("MMM-ModAdmin: failed to serialise config", err);
+        return res.status(500).json({ error: "Unable to serialise configuration" });
+      }
       this.backupConfig();
       fs.writeFile(this.configPath, content, err => {
         if (err) return res.status(500).json({ error: err.message });
@@ -114,6 +121,7 @@ module.exports = NodeHelper.create({
   toggleModule(name) {
     try {
       const content = fs.readFileSync(this.configPath, "utf8");
+      this.configEnvelope = this.extractEnvelope(content);
       const escaped = this.escapeRegex(name);
       const disabledRegex = new RegExp(`\/\*\s*({\s*module:\s*['"]${escaped}['"][\s\S]*?}\s*,?\s*)\*\/`, "m");
       if (disabledRegex.test(content)) {
@@ -160,11 +168,171 @@ module.exports = NodeHelper.create({
 
   readConfig() {
     try {
+      const raw = fs.readFileSync(this.configPath, "utf8");
+      this.configEnvelope = this.extractEnvelope(raw);
       delete require.cache[require.resolve(this.configPath)];
       this.configData = require(this.configPath);
     } catch (err) {
       Log.error("MMM-ModAdmin: could not load config.js", err);
       this.configData = {};
     }
+  },
+
+  formatConfigForWrite(data) {
+    const serialized = serialize(data, { space: 2, unsafe: true });
+    const envelope = this.configEnvelope || this.defaultEnvelope();
+    return `${envelope.prefix}${serialized}${envelope.suffix}`;
+  },
+
+  defaultEnvelope() {
+    return {
+      prefix: "let config = ",
+      suffix:
+        ";\n\nif (typeof module !== \"undefined\") {\n  module.exports = config;\n}\n"
+    };
+  },
+
+  extractEnvelope(content) {
+    const assignmentRegex = /(var|let|const)\s+config\s*=\s*/;
+    const assignmentMatch = assignmentRegex.exec(content);
+    if (!assignmentMatch) {
+      return null;
+    }
+    const assignmentIndex = assignmentMatch.index;
+    const afterAssignmentIndex = assignmentIndex + assignmentMatch[0].length;
+    const objectStart = content.indexOf("{", afterAssignmentIndex);
+    if (objectStart === -1) {
+      return null;
+    }
+    const objectEnd = this.findMatchingBrace(content, objectStart);
+    if (objectEnd === -1) {
+      return null;
+    }
+    return {
+      prefix: content.slice(0, objectStart),
+      suffix: content.slice(objectEnd + 1)
+    };
+  },
+
+  findMatchingBrace(source, startIndex) {
+    let depth = 0;
+    let inSingle = false;
+    let inDouble = false;
+    let inTemplate = false;
+    let inLineComment = false;
+    let inBlockComment = false;
+    let inRegex = false;
+    let inRegexCharClass = false;
+    for (let i = startIndex; i < source.length; i += 1) {
+      const char = source[i];
+      const next = source[i + 1];
+      if (inRegex) {
+        if (char === "[" && !inRegexCharClass && !this.isEscaped(source, i)) {
+          inRegexCharClass = true;
+          continue;
+        }
+        if (char === "]" && inRegexCharClass && !this.isEscaped(source, i)) {
+          inRegexCharClass = false;
+          continue;
+        }
+        if (char === "/" && !inRegexCharClass && !this.isEscaped(source, i)) {
+          inRegex = false;
+        }
+        continue;
+      }
+      if (inLineComment) {
+        if (char === "\n") {
+          inLineComment = false;
+        }
+        continue;
+      }
+      if (inBlockComment) {
+        if (char === "*" && next === "/") {
+          inBlockComment = false;
+          i += 1;
+        }
+        continue;
+      }
+      if (inSingle) {
+        if (char === "'" && !this.isEscaped(source, i)) {
+          inSingle = false;
+        }
+        continue;
+      }
+      if (inDouble) {
+        if (char === '"' && !this.isEscaped(source, i)) {
+          inDouble = false;
+        }
+        continue;
+      }
+      if (inTemplate) {
+        if (char === "`" && !this.isEscaped(source, i)) {
+          inTemplate = false;
+        }
+        continue;
+      }
+      if (char === "'" && !this.isEscaped(source, i)) {
+        inSingle = true;
+        continue;
+      }
+      if (char === '"' && !this.isEscaped(source, i)) {
+        inDouble = true;
+        continue;
+      }
+      if (char === "`" && !this.isEscaped(source, i)) {
+        inTemplate = true;
+        continue;
+      }
+      if (char === "/" && next === "/") {
+        inLineComment = true;
+        i += 1;
+        continue;
+      }
+      if (char === "/" && next === "*") {
+        inBlockComment = true;
+        i += 1;
+        continue;
+      }
+      if (char === "/" && !this.isEscaped(source, i)) {
+        const prev = this.getPreviousNonWhitespace(source, i - 1);
+        const canStartRegex =
+          prev === null || /[({[=:+!?,;*&|^~<>%-]/.test(prev) || prev === "\n";
+        if (canStartRegex) {
+          inRegex = true;
+          continue;
+        }
+      }
+      if (char === "{") {
+        depth += 1;
+      } else if (char === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          return i;
+        }
+      }
+    }
+    return -1;
+  },
+
+  isEscaped(source, index) {
+    let backslashes = 0;
+    for (let i = index - 1; i >= 0; i -= 1) {
+      if (source[i] === "\\") {
+        backslashes += 1;
+      } else {
+        break;
+      }
+    }
+    return backslashes % 2 === 1;
+  },
+
+  getPreviousNonWhitespace(source, index) {
+    for (let i = index; i >= 0; i -= 1) {
+      const char = source[i];
+      if (!/\s/.test(char)) {
+        return char;
+      }
+    }
+    return null;
   }
 });
